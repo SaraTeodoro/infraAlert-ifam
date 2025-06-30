@@ -57,9 +57,12 @@
       border-radius: 8px;
       margin-top: 1rem;
     }
-    input[type="file"], button {
-      margin-top: 1rem;
+    input[type="file"], button, input[type="text"], input[type="password"] {
+      margin-top: 0.5rem;
       display: block;
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 300px;
     }
   </style>
 </head>
@@ -68,38 +71,75 @@
     <div class="logo">InfraAlert | IFAM</div>
   </header>
 
-  <div class="container">
+  <div id="loginContainer" class="container">
     <div class="section">
-      <h2>Captura de Imagem para Detecção</h2>
-      <input type="file" id="imageUpload" accept="image/*">
-      <button onclick="startCamera()">Usar Câmera</button>
-      <video id="camera" autoplay playsinline style="display:none;"></video>
-      <button id="captureBtn" style="display:none;" onclick="capturePhoto()">Capturar Foto</button>
-      <canvas id="snapshotCanvas" style="display:none;"></canvas>
-      <img id="preview" alt="Pré-visualização">
-      <button id="enviarBtn" onclick="enviarImagem()">Detectar Rachadura</button>
-      <p id="resultadoTexto"></p>
-      <img id="imagemProcessada" alt="Imagem processada" style="display:none;">
+      <h2>Login</h2>
+      <label for="usuario">Usuário:</label>
+      <input type="text" id="usuario">
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha">
+      <button onclick="fazerLogin()">Entrar</button>
+      <p id="erroLogin" style="color: red;"></p>
     </div>
+  </div>
 
-    <div class="section">
-      <h2>Resumo de Detecções</h2>
-      <canvas id="chart"></canvas>
-    </div>
+  <div id="sistema" style="display: none;">
+    <div class="container">
+      <div class="section">
+        <h2>Captura de Imagem para Detecção</h2>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="startCamera()">Usar Câmera</button>
+        <video id="camera" autoplay playsinline style="display:none;"></video>
+        <button id="captureBtn" style="display:none;" onclick="capturePhoto()">Capturar Foto</button>
+        <canvas id="snapshotCanvas" style="display:none;"></canvas>
+        <img id="preview" alt="Pré-visualização">
+        <button id="enviarBtn" onclick="enviarImagem()">Detectar Rachadura</button>
+        <p id="resultadoTexto"></p>
+        <img id="imagemProcessada" alt="Imagem processada" style="display:none;">
+      </div>
 
-    <div class="section">
-      <h2>Histórico Simulado</h2>
-      <ul id="history"></ul>
-    </div>
+      <div class="section">
+        <h2>Resumo de Detecções</h2>
+        <canvas id="chart"></canvas>
+      </div>
 
-    <div class="section">
-      <h2>Alerta de Rachaduras Críticas</h2>
-      <div id="alertBox" class="alert" style="display: none;">⚠️ Rachadura crítica detectada!</div>
+      <div class="section">
+        <h2>Histórico Simulado</h2>
+        <ul id="history"></ul>
+      </div>
+
+      <div class="section">
+        <h2>Alerta de Rachaduras Críticas</h2>
+        <div id="alertBox" class="alert" style="display: none;">⚠️ Rachadura crítica detectada!</div>
+      </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
+    function fazerLogin() {
+      const usuario = document.getElementById('usuario').value;
+      const senha = document.getElementById('senha').value;
+
+      fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ usuario, senha })
+      })
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Credenciais inválidas');
+      })
+      .then(data => {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('sistema').style.display = 'block';
+      })
+      .catch(err => {
+        document.getElementById('erroLogin').innerText = err.message;
+      });
+    }
+
     const mockData = [
       { date: '2025-06-24', risk: false },
       { date: '2025-06-25', risk: true },
@@ -108,7 +148,6 @@
       { date: '2025-06-28', risk: false }
     ];
 
-    // Gráfico
     const ctx = document.getElementById('chart').getContext('2d');
     new Chart(ctx, {
       type: 'bar',
@@ -133,7 +172,6 @@
       }
     });
 
-    // Histórico
     const historyList = document.getElementById('history');
     mockData.forEach(item => {
       const li = document.createElement('li');
@@ -142,12 +180,10 @@
       historyList.appendChild(li);
     });
 
-    // Alerta
     if (mockData.some(d => d.risk)) {
       document.getElementById('alertBox').style.display = 'block';
     }
 
-    // Upload de imagem
     let imagemSelecionada;
     document.getElementById('imageUpload').addEventListener('change', function(event) {
       imagemSelecionada = event.target.files[0];
@@ -158,7 +194,6 @@
       reader.readAsDataURL(imagemSelecionada);
     });
 
-    // Câmera
     let stream;
     async function startCamera() {
       const video = document.getElementById('camera');
@@ -185,7 +220,6 @@
       stream.getTracks().forEach(track => track.stop());
     }
 
-    // Enviar imagem para o backend
     async function enviarImagem() {
       if (!imagemSelecionada) {
         alert("Nenhuma imagem selecionada.");
@@ -197,7 +231,8 @@
       try {
         const resposta = await fetch('http://localhost:5000/detectar', {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'include'
         });
 
         const resultado = await resposta.json();
