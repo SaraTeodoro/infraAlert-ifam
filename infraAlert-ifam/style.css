@@ -1,0 +1,59 @@
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #E5E5E5;
+    margin: 0;
+    padding: 0;
+    color: #333333;
+}
+header {
+    background-color: #007A3D;
+    padding: 1rem 2rem;
+    color: white;
+    font-family: 'Rajdhani', sans-serif;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.container {
+    padding: 2rem;
+}
+.section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+canvas {
+    max-width: 100%;
+}
+.alert {
+    color: white;
+    background-color: #D32F2F;
+    padding: 1rem;
+    border-radius: 6px;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+video, img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+input[type="file"], button, input[type="text"], input[type="password"] {
+    margin-top: 0.5rem;
+    display: block;
+    padding: 0.5rem;
+    width: 100%;
+    max-width: 300px;
+}
